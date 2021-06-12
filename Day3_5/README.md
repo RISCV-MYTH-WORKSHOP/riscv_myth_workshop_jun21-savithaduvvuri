@@ -23,3 +23,8 @@ For the counter::
 When non blocking statement was not used, the counter did not start , though i was giving the >>1 $cnt. 
 In Verilog, we normally use always_comb and put a flop (with non-blocking assignment) with $cnt_next and $cnt. 
 The non-blocking assignment makes the difference here.
+
+//Sequential calculator: 
+
+Output: Attached in the upload files. Could not attach/paste here.
+
