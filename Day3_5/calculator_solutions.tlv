@@ -1,13 +1,16 @@
 \m4_TLV_version 1d: tl-x.org
 \SV
 //Calculator labs solutions here
-//Counter solution:
-m4_makerchip_module   // (Expanded in Nav-TLV pane.)
 \TLV
    $reset = *reset;
-
-   //4 bit counter that counts till 15 and becomes 0 after 15 and 0 at reset.
-    $cnt[3:0] <= $reset ? 0 : ($cnt == 4'hF) ? 0 : (>>1$cnt + 1);
+   //mux to select whether to add , sub , diff, mul depending on respective sel value.
+   //To reduce the complexity of the array.
+   $val1[31:0] = >>1$out;
+   $val2[3:0] = $rand2[3:0];
+   //Assigning default value to propagate X .
+   $default = 'x;
+   $out[31:0] = $reset ? 4'h0 : ($op[1:0] == 2'b00)? ($val1 + $val2) : ($op[1:0] == 2'b01) ? (($val1 > $val2) ? ($val1 - $val2) : ($val2 - $val1)): ($op[1:0] == 2'b10) ? ($val1 * $val2) : ($op[1:0] == 2'b11) ? ($val1 / $val2): $default; 
+   
 
    // Assert these to end simulation (before Makerchip cycle limit).
    *passed = *cyc_cnt > 40;
