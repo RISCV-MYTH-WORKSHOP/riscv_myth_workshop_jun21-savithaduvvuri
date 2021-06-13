@@ -47,6 +47,8 @@
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
          $imem_rd_en = (>>1$reset) ? 0 : 1;
          //$instr[31:0] = $imem_rd_data[31:0];
+         $start = (>>1$reset && !$reset) ? 1: 0;
+         $valid = ($reset) ? 0 : $start ? 1 : >>3$valid; 
          
          //Adding the Decode Function:
       @1
@@ -137,8 +139,8 @@
          $taken_branch = ($is_branch == 0) ? 0 :
                           ($src1_value == $src2_value) ? $is_beq :
                           ($src1_value != $src2_value) ? $is_bne :
-                          ((($src1_value < $src2_value) ^ ($src1_value[4]) == $src2_value[4])) ? $is_blt :
-                          ((($src1_value >= $src2_value) ^ ($src1_value[4]) != $src2_value[4])) ? $is_bge :
+                          ((($src1_value < $src2_value) ^ ($src1_value[31]) == $src2_value[31])) ? $is_blt :
+                          ((($src1_value >= $src2_value) ^ ($src1_value[31]) != $src2_value[31])) ? $is_bge :
                           ($src1_value < $src2_value) ? $is_bltu :
                           ($src1_value >= $src2_value) ? $is_bgeu : $default;
                     
@@ -172,4 +174,3 @@
    m4+cpu_viz(@4)    // For visualisation, argument should be at least equal to the last stage of CPU logic. @4 would work for all labs.
 \SV
    endmodule
-
