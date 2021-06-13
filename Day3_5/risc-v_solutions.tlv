@@ -43,35 +43,34 @@
          //Implementing the PC:
          $default = 32'h0;
          $pc[31:0] = (>>1$reset) ? 32'h0 : (>>1$taken_branch == 1)? (>>1$br_tgt_pc[31:0]) : (>>1$pc + 32'h4);
+         //$pc[31:0] = (>>1$reset) ? 32'h0 : (>>1$pc + 32'h4);
          //Connecting Fetch unit to PC to read the instruction address.
          $imem_rd_addr[M4_IMEM_INDEX_CNT-1:0] = $pc[M4_IMEM_INDEX_CNT+1:2];
-         $imem_rd_en = (>>1$reset) ? 0 : 1;
+         $imem_rd_en = !$reset;
          //$instr[31:0] = $imem_rd_data[31:0];
-         $start = (>>1$reset && !$reset) ? 1: 0;
-         $valid = ($reset) ? 0 : $start ? 1 : >>3$valid; 
          
          //Adding the Decode Function:
       @1
          $instr[31:0] = $imem_rd_data[31:0];
          $is_i_instr = ($instr[6:2] ==? 5'b0000x) || 
-                       ($instr[6:2] ==? 5'b001x0) ||
+                       ($instr[6:2] ==? 5'b001x0) || 
                        ($instr[6:2] ==  5'b11001);
          
-         $is_r_instr = ($instr[6:2] ==  5'b01011) ||
-                       ($instr[6:2] ==? 5'b011x0) ||
-                       ($instr[6:2] ==  5'b10100);
+         $is_r_instr = ($instr[6:2] ==?  5'b01011)|| 
+                       ($instr[6:2] ==? 5'b011x0) || 
+                       ($instr[6:2] ==?  5'b10100);
          
          $is_s_instr = ($instr[6:2] ==? 5'b0100x);
          
-         $is_b_instr = ($instr[6:2] ==  5'b11000);
+         $is_b_instr = ($instr[6:2] ==?  5'b11000);
          $is_j_instr = ($instr[6:2] ==  5'b11011);
          $is_u_instr = ($instr[6:2] ==  5'b0x101);
          
          $imm[31:0] = $is_i_instr? { {21{$instr[31]}}, $instr[30:20]} :
-                      $is_s_instr? { {21{$instr[31]}}, $instr[30:25], $instr[11:8], $instr[7] } :
-                      $is_b_instr? { {20{$instr[31]}}, $instr[7], $instr[31:25], $instr[11:8] } : 
-                      $is_u_instr? { $instr[31],$instr[30:20],$instr[19:12]} :
-                      $is_j_instr? { {12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:25], $instr[24:21]} :
+                      $is_s_instr? { {21{$instr[31]}}, $instr[30:25], $instr[11:7]} :
+                      $is_b_instr? { {20{$instr[31]}}, $instr[7], $instr[30:25], $instr[11:8],1'b0 } : 
+                      $is_u_instr? { $instr[31],$instr[30:20],$instr[19:12],12'b0} :
+                      $is_j_instr? { {12{$instr[31]}}, $instr[19:12], $instr[20], $instr[30:25], $instr[24:21],1'b0} :
                       $default;
          
          $funct7_valid = $is_r_instr;
@@ -117,6 +116,7 @@
          $rf_rd_en2 = $rs2_valid;
          ?$rs1_valid
             $rf_rd_index1[4:0] = $rs1[4:0];
+            
          ?$rs2_valid
             $rf_rd_index2[4:0] = $rs2[4:0];
             
@@ -130,19 +130,18 @@
                          $default;
          // Register File Write:
          //rd - destination register.
-         $rd_wr_valid = $rd_valid & ($rd != 5'b0000);
-         ?$rd_wr_valid
+         $rf_wr_en = $rd_valid & ($rd != 5'b0000);
+         ?$rf_wr_en
             $rf_wr_index[4:0] = $rd[4:0];
-            $rf_wr_data[31:0] = >>1$result[31:0];
+            $rf_wr_data[31:0] = $result[31:0];
          //Branches:
-         $is_branch = ($is_beq || $is_bne || $is_blt || $is_bge || $is_bltu || $is_bgeu);
-         $taken_branch = ($is_branch == 0) ? 0 :
-                          ($src1_value == $src2_value) ? $is_beq :
-                          ($src1_value != $src2_value) ? $is_bne :
-                          ((($src1_value < $src2_value) ^ ($src1_value[31]) == $src2_value[31])) ? $is_blt :
-                          ((($src1_value >= $src2_value) ^ ($src1_value[31]) != $src2_value[31])) ? $is_bge :
-                          ($src1_value < $src2_value) ? $is_bltu :
-                          ($src1_value >= $src2_value) ? $is_bgeu : $default;
+         //$is_branch = ($is_beq || $is_bne || $is_blt || $is_bge || $is_bltu || $is_bgeu);
+         $taken_branch =  $is_beq ? ($src1_value == $src2_value) :
+                          $is_bne ? ($src1_value != $src2_value) :
+                          $is_blt ? ((($src1_value < $src2_value) ^ ($src1_value[31]) != $src2_value[31]))  :
+                          $is_bge ? ((($src1_value >= $src2_value) ^ ($src1_value[31]) == $src2_value[31]))  :
+                          $is_bltu ? ($src1_value<$src2_value)  :
+                          $is_bgeu ? ($src1_value >= $src2_value) : 1'h0;
                     
          //Branch target:
          $br_tgt_pc[31:0] = $pc[31:0] + $imm[31:0];
