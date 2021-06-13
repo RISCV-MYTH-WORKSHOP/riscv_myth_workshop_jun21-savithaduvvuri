@@ -9,30 +9,35 @@
 
 \TLV
    |calc
-     @0
+      @0
          $reset = *reset;
-         
-         
          //Assigning default value to propagate X .
          
       @1
-         $val1[31:0] = >>2$out;
+         $valid = $reset ? 0 :  (>>1$valid + 1);
+         //~valid ORing with Reset.
+         $reset_valid = $valid | $reset;
          $val2[3:0] = $rand2[3:0];
          $default = 'x;
-         //1 bit counter that generates valid.
-         $valid = $reset ? 0 :  (>>1$valid + 1);
-      @2
-         
-         
-         
-         //~valid ORing with Reset.
-         $reset_valid = ~$valid | $reset;
-         //MUX @2
-         $out[31:0] = $reset_valid ? 4'h0 : ($op[1:0] == 2'b00)? ($val1 + $val2) : ($op[1:0] == 2'b01) ? (($val1 > $val2) ? ($val1 - $val2) : ($val2 - $val1)): ($op[1:0] == 2'b10) ? ($val1 * $val2) : ($op[1:0] == 2'b11) ? ($val1 / $val2): $default; 
-         
+         $val1[31:0] = >>2$out;
+      ?$reset_valid
+         @1
+            //1 bit counter that generates valid.
+            //MUX @2
+            $out[31:0] = $reset? 4'h0: ($op[1:0] == 2'b00)? ($val1 + $val2) : ($op[1:0] == 2'b01) ? (($val1 > $val2) ? ($val1 - $val2) : ($val2 - $val1)): ($op[1:0] == 2'b10) ? ($val1 * $val2) : ($op[1:0] == 2'b11) ? ($val1 / $val2): $default; 
+
          
 
-   //m4+cal_viz(@3) // Arg: Pipeline stage represented by viz, should be atleast equal to last stage of CALCULATOR logic.
+      // Macro instantiations for calculator visualization(disabled by default).
+      // Uncomment to enable visualisation, and also,
+      // NOTE: If visualization is enabled, $op must be defined to the proper width using the expression below.
+      //       (Any signals other than $rand1, $rand2 that are not explicitly assigned will result in strange errors.)
+      //       You can, however, safely use these specific random signals as described in the videos:
+      //  o $rand1[3:0]
+      //  o $rand2[3:0]
+      //  o $op[x:0]
+      
+   m4+cal_viz(@3) // Arg: Pipeline stage represented by viz, should be atleast equal to last stage of CALCULATOR logic.
 
    
    // Assert these to end simulation (before Makerchip cycle limit).
@@ -42,3 +47,4 @@
 
 \SV
    endmodule
+
