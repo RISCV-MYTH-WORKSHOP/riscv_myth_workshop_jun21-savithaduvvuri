@@ -114,7 +114,8 @@
          //Add:
          $is_add =  $dec_bits ==? 11'b00000110011;
          `BOGUS_USE($is_beq $is_bne $is_blt $is_bge $is_bltu $is_bgeu $is_add $is_addi)
-         //Branch PC target
+         //Branch PC target 
+         //has kept this in cycle 1 because if i keep in cycle 2 took 106 cycles to complete and in cycle 1 98 cycles to complete.
          $br_tgt_pc[31:0] = $pc[31:0] + $imm[31:0];
          //PC increment:
          $inc_pc[31:0] = $pc + 32'd4;
