@@ -12,7 +12,7 @@ RISC V contains 0-31 registers named by x31-x0:
 -   - - add x1 , x2 , x3 :  Here, Add is the opcode, x1 is the rd (destination register) , x2 (rs1 - Source register) , x1 (rs2 - Source register2) .
 -   Here, we are giving the ASM instructions as inputs and design the CPU to give outputs for any instructions that we give. 
 -   Now , this workshop helps to design the corresponding instructions using PC, Fetch unit, Decode units, ALU, Register read, register write and this leads to adding more instructions and a pipelined structure to give better performance , add certain valids to perform better clock gating saving us power thus giving a very good design.
--   Before adding the pipelined logic the output was present at 106 cycles , after adding the pipelined logic and taking care of the read/write hazard and saving on the writes, we get the same output at nearly 40 cycles which is a huge save.
+-   Before adding the pipelined logic the output was present at 106 cycles , after adding the pipelined logic and taking care of the read/write hazard and saving on the writes, we get the same output at nearly 60 cycles which is a huge save.
 
 	- This is a huge task to code in the verilog as there is  a need to declare flops and we get confused at many stages.
 	- This interface and TL verilog helped me a lot in this exercise - wherein - the delays can be easily coded with @0,@1,@2 describing the cycle of the design , and we could compile the code after each step to look for the design visualization, waveform.
