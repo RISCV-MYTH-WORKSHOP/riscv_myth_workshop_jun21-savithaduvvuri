@@ -43,7 +43,7 @@
          $reset = *reset;
          //Implementing the PC:
          $default = 32'h0;
-         $pc[31:0] = (>>1$reset) ? 32'h0 : (>>3$valid_taken_br == 1)? (>>3$br_tgt_pc[31:0]) : (>>3$valid_load ==1) ? (>>3$inc_pc) : >>1$inc_pc;
+         $pc[31:0] = (>>1$reset) ? 32'h0 : (>>3$valid_taken_br == 1)? (>>3$br_tgt_pc[31:0]) : (>>3$valid_load ==1) ? (>>3$inc_pc) : (>>3$valid_taken_jump ==1)? (>>3$jalr_tgt_pc) : >>1$inc_pc;
          //$pc[31:0] = (>>1$reset) ? 32'h0 : (>>1$taken_branch == 1)? (>>1$br_tgt_pc[31:0]) : (>>1$pc + 32'h4);
          //$pc[31:0] = (>>1$reset) ? 32'h0 : (>>1$pc + 32'h4);
          //Connecting Fetch unit to PC to read the instruction address.
@@ -189,6 +189,12 @@
                     
          
          $valid_taken_br = $valid && $taken_branch;
+         
+         $is_jump = ($is_jal || $is_jalr);
+         $taken_jump = $is_jal ? ($pc + $imm) :
+                       $is_jalr? ($src1_value + $imm) : $default;
+         $valid_taken_jump = $valid && $taken_jump;
+         $jalr_tgt_pc = $src1_value + $imm;
             
       @4
          $dmem_addr[3:0] = $result[5:2];
